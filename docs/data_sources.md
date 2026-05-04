@@ -188,3 +188,94 @@ Should weather be matched by UTC time or local stadium time?
 Do we need hourly weather or daily aggregates?
 Which variables are justifiable for football prediction?
 Should future simulations use weather forecasts, historical averages, or no weather feature?
+
+## Dataset 2: SoccerData / FBref World Cup Schedule
+
+### Source
+
+- URL: https://pypi.org/project/soccerdata/
+- Provider:
+  - Python package: `soccerdata`
+  - Underlying data source tested here: FBref
+- Access date: 2026-05-04
+- License / usage notes:
+  - `soccerdata` package license: Apache-2.0.
+  - The package uses web scraping and should be used responsibly.
+  - Usage must comply with the terms of service of the underlying websites.
+  - Scrapers may break when source websites change.
+
+### File information
+
+- Local filename:
+  - `data/raw/soccerdata/fbref_world_cup/fbref_int_world_cup_2022_schedule_raw.csv`
+  - `data/raw/soccerdata/fbref_world_cup/fbref_int_world_cup_2022_schedule_metadata.json`
+- Format:
+  - Data pulled via Python package and saved locally as CSV snapshot.
+  - Metadata saved separately as JSON.
+- Approx. rows:
+  - To be filled after notebook exploration.
+- Approx. columns:
+  - To be filled after notebook exploration.
+- Time range:
+  - World Cup 2022 test query.
+- Level of data:
+  - Match-level
+
+### Relevant columns
+
+| Column | Meaning | Notes |
+|---|---|---|
+| date | Match date | To be checked |
+| time | Kickoff time | To be checked |
+| home_team | Home team / listed first team | May not mean true home advantage |
+| away_team | Away team / listed second team | May not mean true away disadvantage |
+| score | Match score | Needs later parsing |
+| venue | Stadium / venue | Useful for possible weather joins |
+| game_id | FBref match identifier | Useful as source-specific ID |
+| match_report | Link/path to match report | Optional |
+
+### Initial quality notes
+
+- Missing values:
+  - To be checked in notebook.
+- Duplicate rows:
+  - To be checked in notebook.
+- Team name issues:
+  - To be checked.
+- Date format:
+  - To be checked.
+- Score definition:
+  - Need to clarify whether score reflects final score, extra time, or penalties.
+- Extra time included?
+  - Open question.
+- Penalty shootouts included?
+  - Open question.
+- Neutral venue available?
+  - World Cup matches are generally neutral in modeling terms, but source may not provide a direct neutral flag.
+- Country/team identifiers available?
+  - To be checked.
+
+### Potential use in project
+
+- Raw match history:
+  - Possible for World Cup-specific match schedule/results.
+- World Cup-specific matches:
+  - Yes, potentially useful.
+- Elo calculation:
+  - Not enough alone for broad Elo history.
+- Model training:
+  - Probably too small alone; useful as World Cup-specific validation/context.
+- Simulation input:
+  - Potentially useful for tournament structure or historical comparison.
+- Not useful because:
+  - Not broad enough alone for training a general goal model.
+  - Depends on web scraping and source stability.
+
+### Open questions
+
+- Does this source contain enough international match history or only tournament-specific matches?
+- Is `home_team` meaningful for neutral World Cup games?
+- How exactly is `score` encoded?
+- Are extra time and penalties represented clearly?
+- Can this source be combined cleanly with our main match dataset?
+- Should FBref be a core source or only a supplemental World Cup source?
