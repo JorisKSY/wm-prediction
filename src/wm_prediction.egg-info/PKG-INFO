@@ -1,0 +1,5 @@
+Metadata-Version: 2.4
+Name: wm-prediction
+Version: 0.1.0
+Summary: World Cup prediction project using Python, Postgres and Streamlit
+Requires-Python: >=3.11
