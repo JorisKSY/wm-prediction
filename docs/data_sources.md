@@ -279,3 +279,99 @@ Should future simulations use weather forecasts, historical averages, or no weat
 - Are extra time and penalties represented clearly?
 - Can this source be combined cleanly with our main match dataset?
 - Should FBref be a core source or only a supplemental World Cup source?
+
+## Dataset 3: Kaggle Player Scores / Football Data from Transfermarkt
+
+### Source
+
+- URL: https://www.kaggle.com/datasets/davidcariboo/player-scores
+- Provider:
+  - Kaggle dataset: `davidcariboo/player-scores`
+  - Underlying source: Transfermarkt
+- Access date: 2026-05-04
+- License / usage notes:
+  - To be checked on Kaggle before final project use.
+  - Dataset is downloaded locally via Kaggle API.
+  - Raw files are not committed to GitHub.
+  - Dataset may be updated by the provider, so local snapshots should be documented.
+
+### File information
+
+- Local folder:
+  - `data/raw/kaggle_player_scores/`
+- Format:
+  - Multiple CSV files
+- Approx. rows:
+  - See notebook inventory.
+- Approx. columns:
+  - See notebook inventory.
+- Time range:
+  - To be checked in relevant tables.
+- Level of data:
+  - Player-level
+  - Appearance-level
+  - Match-level
+  - Club-level
+  - Competition-level
+  - Country/national-team-level
+
+### Relevant files
+
+| File | Meaning | Project relevance |
+|---|---|---|
+| players.csv | Player profiles | Potential player-level context |
+| appearances.csv | Player appearances per game | Potential player participation data |
+| player_valuations.csv | Player market values over time | Potential squad strength proxy |
+| transfers.csv | Player transfer history | Probably not MVP |
+| game_events.csv | Goals, cards, substitutions, etc. | Optional detailed match/player events |
+| game_lineups.csv | Lineups | Optional, potentially useful but complex |
+| games.csv | Match results and metadata | Context table for appearances/events |
+| clubs.csv | Club/team entities | Needed for joins |
+| competitions.csv | Competition metadata | Needed for filtering context |
+| countries.csv | Country metadata | Optional context |
+| national_teams.csv | National team metadata | Potentially useful for World Cup context |
+
+### Initial quality notes
+
+- Missing values:
+  - To be checked in notebook.
+- Duplicate rows:
+  - To be checked in notebook.
+- Player identifiers:
+  - Need to check whether `player_id` is stable across files.
+- Team/club identifiers:
+  - Need to check how clubs and national teams are represented.
+- Date format:
+  - To be checked.
+- Match linkage:
+  - Need to check how `game_id` links appearances/events/lineups to games.
+- International relevance:
+  - Need to check whether this dataset is useful for national-team or World Cup modeling.
+- Data size:
+  - Some files may be large and should not be loaded blindly.
+
+### Potential use in project
+
+- Raw match history:
+  - Possible as context, but not the main reason for this source.
+- World Cup-specific matches:
+  - To be checked.
+- Elo calculation:
+  - Probably not primary source.
+- Model training:
+  - Possible later for player/squad-strength features.
+- Simulation input:
+  - Possible later for squad/player context.
+- Not useful because:
+  - Player-level data may be too complex for MVP.
+  - Transfermarkt data may focus strongly on clubs.
+  - Joining player data to national-team match prediction may require careful design.
+
+### Open questions
+
+- Is the dataset useful for national-team prediction or mostly club football?
+- Can player-level data be aggregated into team-strength features?
+- Are national-team appearances represented clearly?
+- Can market values be linked to match dates without leakage?
+- Which tables are actually needed for the MVP?
+- Should this source be optional for a later project stage?
