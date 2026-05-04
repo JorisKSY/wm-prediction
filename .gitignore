@@ -10,6 +10,12 @@ data/raw/*
 data/processed/*
 !data/raw/.gitkeep
 !data/processed/.gitkeep
+!data/raw/README.md
+
+
+.cache/
+*.sqlite
+*.sqlite3
 
 *.db
 *.sqlite
