@@ -24,3 +24,6 @@ data/processed/*
 *.joblib
 
 .DS_Store
+# Temporary downloader artifacts
+downloaded_files/
+notebooks/downloaded_files/
