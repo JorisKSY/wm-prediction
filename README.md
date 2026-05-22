@@ -568,3 +568,124 @@ Next technical steps:
 ## Project Goal in One Sentence
 
 Build a Streamlit-based data science app that predicts football match outcomes and simulates World Cup tournaments using expected goals, Poisson probabilities and Monte Carlo simulation.
+## Raw Data Layer in PostgreSQL
+
+In diesem Schritt wurde ein reproduzierbarer Raw Data Layer in PostgreSQL aufgebaut. Die Rohdaten aus `data/raw/kaggle_player_scores/` und `data/raw/soccerdata/` werden automatisiert in das PostgreSQL-Schema `raw` importiert. Für jede CSV-Datei wird eine eigene Tabelle erstellt, z. B. `raw.kaggle_player_scores_games` oder `raw.soccerdata_fbref_world_cup_2022_schedule`.
+
+Die Raw-Tabellen bleiben bewusst sehr nah an den ursprünglichen CSV-Dateien:
+
+- keine Businesslogik
+- kein Team-Mapping
+- kein Feature Engineering
+- keine Foreign Keys
+- alle Spalten pragmatisch als nullable `TEXT`
+- snake_case-Spaltennamen
+- reproduzierbarer Import per Python-Script
+
+Aktuell werden 14 CSV-Dateien importiert. Dateien aus `data/raw/open_meteo/` liegen ggf. lokal noch im Raw-Ordner, werden aber bewusst nicht importiert.
+
+### Raw-Daten importieren
+
+Nach dem Klonen des Repositories müssen die Rohdaten lokal unter `data/raw/` vorhanden sein. Die Rohdaten selbst werden nicht ins Git committet.
+
+Erwartete Struktur:
+
+```text
+data/raw/
+├── kaggle_player_scores/
+│   ├── appearances.csv
+│   ├── club_games.csv
+│   ├── clubs.csv
+│   ├── competitions.csv
+│   ├── countries.csv
+│   ├── game_events.csv
+│   ├── game_lineups.csv
+│   ├── games.csv
+│   ├── national_teams.csv
+│   ├── player_valuations.csv
+│   ├── players.csv
+│   └── transfers.csv
+└── soccerdata/
+    ├── fbref_world_cup_2018_schedule.csv
+    └── fbref_world_cup_2022_schedule.csv
+```
+
+Dann PostgreSQL starten und sicherstellen, dass `.env` eine gültige `DATABASE_URL` enthält.
+
+Beispiel:
+
+```bash
+source .venv/bin/activate
+docker compose up -d
+python -m wm_prediction.db.import_raw --replace
+```
+
+Der Import erstellt das Schema `raw`, legt alle Raw-Tabellen an und lädt die CSV-Daten in PostgreSQL. Mit `--replace` werden bestehende Raw-Tabellen vorher gelöscht und neu aufgebaut.
+
+Vor dem Import kann der geplante Import geprüft werden:
+
+```bash
+python -m wm_prediction.db.import_raw --dry-run
+```
+
+### Raw-Daten auditieren
+
+Nach dem Import kann ein Audit ausgeführt werden:
+
+```bash
+python -m wm_prediction.db.audit_raw
+```
+
+Der Audit prüft:
+
+- welche Raw-Tabellen existieren
+- ob die Row Counts zwischen CSV und PostgreSQL übereinstimmen
+- mögliche Primary-Key-Kandidaten
+- komplett leere Spalten
+- kaputte Datumsfelder
+- offensichtliche Importprobleme
+
+Der aktuelle Stand: Alle 14 importierten CSV-Dateien stimmen in den Row Counts mit den PostgreSQL-Tabellen überein. Komplett leere Spalten bleiben im Raw Layer erhalten, weil dieser Layer möglichst quellnah bleiben soll.
+
+### Datenbank ansehen und nutzen
+
+Die Tabellen liegen im PostgreSQL-Schema `raw`. Beispiele:
+
+```sql
+SELECT COUNT(*)
+FROM raw.kaggle_player_scores_games;
+
+SELECT *
+FROM raw.soccerdata_fbref_world_cup_2022_schedule
+LIMIT 10;
+```
+
+Die Daten können über jedes PostgreSQL-kompatible Tool angesehen werden, z. B. `psql`, DBeaver, DataGrip oder pgAdmin. Innerhalb des Python-Projekts kann die bestehende SQLAlchemy-Verbindung genutzt werden:
+
+```python
+from sqlalchemy import text
+from wm_prediction.db.connection import get_engine
+
+engine = get_engine()
+
+with engine.connect() as connection:
+    rows = connection.execute(
+        text("SELECT * FROM raw.kaggle_player_scores_games LIMIT 10")
+    ).fetchall()
+
+print(rows)
+```
+
+### Nächste Schritte
+
+Als nächstes sollte auf Basis des Raw Layers ein sauberer Intermediate- oder Staging-Layer entstehen. Dort können wir beginnen, Datentypen zu normalisieren, Datumsfelder zu casten, Team- und Wettbewerbsnamen zu vereinheitlichen und relevante Tabellen für das spätere Modell vorzubereiten.
+
+Mögliche nächste Schritte:
+
+- Staging-Schema erstellen, z. B. `staging`
+- ausgewählte Raw-Tabellen typisieren, z. B. IDs als Integer, Datumsfelder als Date
+- World-Cup-Spielpläne aus `soccerdata` sauber aufbereiten
+- relevante historische Spiele aus Kaggle/Transfermarkt-Daten identifizieren
+- Team-Mapping vorbereiten, aber noch getrennt vom Raw Layer halten
+- erste Data-Quality-Checks für den späteren Modeling-Datensatz definieren
+- erst danach Feature Engineering und Modellierung starten
