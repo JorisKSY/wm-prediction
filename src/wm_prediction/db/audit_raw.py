@@ -148,14 +148,17 @@ def find_broken_date_columns(table_name: str, columns: list[str]) -> dict[str, i
 
         column_sql = quote_identifier(column)
 
-        # Accept YYYY-MM-DD and timestamp-like YYYY-MM-DDTHH:MM / YYYY-MM-DD HH:MM values.
+        # Accept:
+        # - year only: YYYY
+        # - date: YYYY-MM-DD
+        # - timestamp-like: YYYY-MM-DDTHH:MM, YYYY-MM-DD HH:MM, optionally with seconds
         broken_count = fetch_scalar(
             f"""
             SELECT COUNT(*)
             FROM {schema_sql}.{table_sql}
             WHERE {column_sql} IS NOT NULL
               AND btrim({column_sql}) <> ''
-              AND {column_sql} !~ '^\\d{{4}}-\\d{{2}}-\\d{{2}}([ T]\\d{{2}}:\\d{{2}}(:\\d{{2}})?)?$'
+              AND {column_sql} !~ '^\\d{{4}}(-\\d{{2}}-\\d{{2}}([ T]\\d{{2}}:\\d{{2}}(:\\d{{2}})?)?)?$'
             """
         )
 

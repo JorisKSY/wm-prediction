@@ -14,7 +14,7 @@ from wm_prediction.db.connection import get_engine
 
 RAW_DATA_DIR = PROJECT_ROOT / "data" / "raw"
 RAW_SCHEMA = "raw"
-INCLUDED_RAW_SOURCES = {"kaggle_player_scores", "soccerdata"}
+INCLUDED_RAW_SOURCES = {"atheels_datasets", "kaggle_player_scores", "soccerdata"}
 
 
 @dataclass(frozen=True)
@@ -29,6 +29,11 @@ class CsvTablePlan:
 
 def snake_case(value: str) -> str:
     value = value.strip().replace("\ufeff", "")
+
+    # Convert CamelCase / PascalCase to snake_case before removing separators.
+    value = re.sub(r"(.)([A-Z][a-z]+)", r"\1_\2", value)
+    value = re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", value)
+
     value = re.sub(r"[^0-9a-zA-Z]+", "_", value)
     value = re.sub(r"_+", "_", value).strip("_").lower()
 
