@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+
+load_dotenv()
 import streamlit as st
 
 from wm_prediction.db.connection import check_database_connection

@@ -26,4 +26,4 @@ data/processed/*
 .DS_Store
 # Temporary downloader artifacts
 downloaded_files/
-notebooks/downloaded_files/
+scripts/downloaded_files/
