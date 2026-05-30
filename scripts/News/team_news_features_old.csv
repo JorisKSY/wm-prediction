@@ -1,0 +1,2 @@
+team,avg_news_sentiment,injury_news_count,total_injury_severity,suspension_news_count,total_suspension_severity,morale_pressure_news_count,avg_morale_pressure_score,coach_news_count,coach_pressure_count,avg_coach_sentiment_score
+Germany national team,0.4,0,0.0,0,0.0,0,0.0,1,0,0.35
