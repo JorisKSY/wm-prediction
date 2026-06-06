@@ -41,9 +41,61 @@ ON CONFLICT (fifa_team_name) DO UPDATE SET
 DROP TABLE IF EXISTS staging.fifa_rankings;
 
 CREATE TABLE staging.fifa_rankings AS
-SELECT
+SELECT DISTINCT
     tm.team_id,
     tm.canonical_name,
+
+    CASE
+        WHEN trim(f.date) ~ '^[0-9]{4}$'
+        THEN trim(f.date)::INT
+        ELSE NULL
+    END AS ranking_year,
+
+    CASE
+        WHEN trim(f.semester) ~ '^[0-9]+$'
+        THEN trim(f.semester)::INT
+        ELSE NULL
+    END AS ranking_semester,
+
+    CASE
+        WHEN trim(f.date) ~ '^[0-9]{4}$'
+         AND trim(f.semester) = '1'
+        THEN make_date(trim(f.date)::INT, 1, 1)
+
+        WHEN trim(f.date) ~ '^[0-9]{4}$'
+         AND trim(f.semester) = '2'
+        THEN make_date(trim(f.date)::INT, 7, 1)
+
+        WHEN trim(f.date) ~ '^[0-9]{4}$'
+        THEN make_date(trim(f.date)::INT, 1, 1)
+
+        ELSE NULL
+    END AS ranking_date,
+
+    CASE
+        WHEN trim(f.rank) ~ '^[0-9]+(\.0+)?$'
+        THEN trim(f.rank)::NUMERIC::INT
+        ELSE NULL
+    END AS rank_int,
+
+    CASE
+        WHEN trim(f.total_points) ~ '^-?[0-9]+(\.[0-9]+)?$'
+        THEN trim(f.total_points)::NUMERIC
+        ELSE NULL
+    END AS total_points_numeric,
+
+    CASE
+        WHEN trim(f.previous_points) ~ '^-?[0-9]+(\.[0-9]+)?$'
+        THEN trim(f.previous_points)::NUMERIC
+        ELSE NULL
+    END AS previous_points_numeric,
+
+    CASE
+        WHEN trim(f.diff_points) ~ '^-?[0-9]+(\.[0-9]+)?$'
+        THEN trim(f.diff_points)::NUMERIC
+        ELSE NULL
+    END AS diff_points_numeric,
+
     f.*
 FROM raw.atheels_datasets_historical_fifa_mens_rank f
 LEFT JOIN staging.fifa_team_aliases a

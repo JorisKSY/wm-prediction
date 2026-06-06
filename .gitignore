@@ -27,3 +27,6 @@ data/processed/*
 # Temporary downloader artifacts
 downloaded_files/
 scripts/downloaded_files/
+
+# External reference/data files
+/data/external/

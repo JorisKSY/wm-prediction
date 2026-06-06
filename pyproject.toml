@@ -7,6 +7,16 @@ name = "wm-prediction"
 version = "0.1.0"
 description = "World Cup prediction project using Python, Postgres and Streamlit"
 requires-python = ">=3.11"
+dependencies = [
+    "numpy",
+    "pandas",
+    "python-dotenv",
+    "scikit-learn",
+    "scipy",
+    "sqlalchemy",
+    "psycopg",
+    "streamlit",
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]
