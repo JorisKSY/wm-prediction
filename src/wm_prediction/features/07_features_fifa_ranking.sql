@@ -20,26 +20,40 @@
 
 CREATE SCHEMA IF NOT EXISTS features;
 
+-- Normalized FIFA ranking names, factored out so that BOTH this file and later
+-- feature files (e.g. opponent-strength / SOS in Phase E) read ONE source of truth
+-- for the canonical_name -> feature_team_name mapping. Do not duplicate this CASE
+-- block elsewhere; read from features.fifa_rankings_normalized instead.
+DROP TABLE IF EXISTS features.fifa_rankings_normalized;
+
+CREATE TABLE features.fifa_rankings_normalized AS
+SELECT
+    CASE
+        WHEN canonical_name IN ('Cabo Verde', 'Cape Verde Islands') THEN 'Cape Verde'
+        WHEN canonical_name = 'The Gambia' THEN 'Gambia'
+        WHEN canonical_name = 'Brunei Darussalam' THEN 'Brunei'
+        WHEN canonical_name = 'Chinese Taipei' THEN 'Taiwan'
+        WHEN canonical_name = 'Curacao' THEN 'Curaçao'
+        WHEN canonical_name = 'FYR Macedonia' THEN 'North Macedonia'
+        WHEN canonical_name = 'Sao Tome e Principe' THEN 'São Tomé and Príncipe'
+        ELSE canonical_name
+    END AS feature_team_name,
+    ranking_year,
+    ranking_semester,
+    ranking_date,
+    rank_int,
+    total_points_numeric,
+    previous_points_numeric,
+    diff_points_numeric
+FROM staging.fifa_rankings;
+
+CREATE INDEX IF NOT EXISTS idx_fifa_rankings_normalized_name_date
+    ON features.fifa_rankings_normalized (feature_team_name, ranking_date DESC);
+
+
 DROP TABLE IF EXISTS features.team_fifa_ranking_before_match;
 
 CREATE TABLE features.team_fifa_ranking_before_match AS
-WITH fifa_rankings_normalized AS (
-    SELECT
-        CASE
-            WHEN canonical_name IN ('Cabo Verde', 'Cape Verde Islands') THEN 'Cape Verde'
-            WHEN canonical_name = 'Chinese Taipei' THEN 'Taiwan'
-            WHEN canonical_name = 'Curacao' THEN 'Curaçao'
-            WHEN canonical_name = 'FYR Macedonia' THEN 'North Macedonia'
-            WHEN canonical_name = 'Sao Tome e Principe' THEN 'São Tomé and Príncipe'
-            ELSE canonical_name
-        END AS feature_team_name,
-        ranking_date,
-        rank_int,
-        total_points_numeric,
-        previous_points_numeric,
-        diff_points_numeric
-    FROM staging.fifa_rankings
-)
 SELECT
     cur.historical_match_id,
     cur.match_date,
@@ -68,7 +82,7 @@ LEFT JOIN LATERAL (
         total_points_numeric,
         previous_points_numeric,
         diff_points_numeric
-    FROM fifa_rankings_normalized fr
+    FROM features.fifa_rankings_normalized fr
     WHERE fr.feature_team_name = cur.team_name
       AND fr.ranking_date < cur.match_date
     ORDER BY fr.ranking_date DESC

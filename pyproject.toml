@@ -16,6 +16,7 @@ dependencies = [
     "sqlalchemy",
     "psycopg",
     "streamlit",
+    "xgboost>=2.1,<4",
 ]
 
 [tool.setuptools.packages.find]

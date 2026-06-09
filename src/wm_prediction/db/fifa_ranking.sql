@@ -114,3 +114,52 @@ LEFT JOIN staging.team_mapping tm
     ON tm.canonical_name = COALESCE(a.canonical_name, f.team)
 WHERE tm.team_id IS NULL
 ORDER BY f.team;
+-- ============================================================
+-- NEUE FIFA-RANKINGS 2024-07 bis 2026-06 (Phase J)
+-- Quelle: raw.atheels_datasets_fifa_mens_rankings
+--   (gescrapte offizielle FIFA-Men's-Releases, echte ranking_date)
+-- Anhang an die historische staging.fifa_rankings.
+-- Designentscheidungen:
+--   - ranking_date: echtes Release-Datum 1:1 (genauer als histor. Semester-Rundung)
+--   - ranking_year: aus ranking_date abgeleitet
+--   - ranking_semester: grobes Etikett (1=Jan-Jun, 2=Jul-Dez).
+--     ACHTUNG: bei mehreren Releases pro Halbjahr NICHT eindeutig.
+--     Der wahre Snapshot-Identifikator ist ranking_date. Alle as-of-Joins
+--     (07, 20, 21) joinen ueber ranking_date, daher unkritisch.
+--   - Giftzeilen (gescrapter Werbecode) ueber country_code-Filter entfernt.
+--   - Namensnormalisierung ausschliesslich ueber staging.fifa_team_aliases
+--     + staging.team_mapping (eine Quelle der Wahrheit, nicht dupliziert).
+-- Idempotent: vorhandene neue Snapshots werden vorher entfernt.
+-- ============================================================
+DELETE FROM staging.fifa_rankings
+WHERE ranking_date >= DATE '2024-07-18';
+
+INSERT INTO staging.fifa_rankings (
+    team_id, canonical_name, ranking_year, ranking_semester, ranking_date,
+    rank_int, total_points_numeric, previous_points_numeric, diff_points_numeric,
+    date, semester, rank, team, acronym, total_points, previous_points, diff_points
+)
+SELECT
+    tm.team_id,
+    tm.canonical_name,
+    EXTRACT(YEAR FROM r.ranking_date::date)::int,
+    CASE WHEN EXTRACT(MONTH FROM r.ranking_date::date) <= 6 THEN 1 ELSE 2 END,
+    r.ranking_date::date,
+    r.rank_int::int,
+    r.total_points::numeric,
+    NULLIF(r.previous_points,'')::numeric,
+    NULL::numeric,
+    r.ranking_date,
+    NULL::text,
+    r.rank_int,
+    r.team_name,
+    r.country_code,
+    r.total_points,
+    r.previous_points,
+    NULL::text
+FROM raw.atheels_datasets_fifa_mens_rankings r
+LEFT JOIN staging.fifa_team_aliases a
+    ON r.team_name = a.fifa_team_name
+JOIN staging.team_mapping tm
+    ON tm.canonical_name = COALESCE(a.canonical_name, r.team_name)
+WHERE r.country_code ~ '^[A-Z]{3}$';

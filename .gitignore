@@ -30,3 +30,6 @@ scripts/downloaded_files/
 
 # External reference/data files
 /data/external/
+
+# Local raw/data exports
+/player_valuations.csv

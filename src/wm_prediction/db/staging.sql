@@ -42,6 +42,9 @@ VALUES
     ('Congo DR', 'DR Congo'),
     ('Côte d''Ivoire', 'Ivory Coast'),
     ('Cote d''Ivoire', 'Ivory Coast'),
+    ('[{''Locale'': ''en-GB'', ''Description'': "Côte d''Ivoire"}]', 'Ivory Coast'),
+
+    ('Cabo Verde', 'Cape Verde'),
 
     ('Aotearoa New Zealand', 'New Zealand'),
 
