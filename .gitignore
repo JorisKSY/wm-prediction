@@ -33,3 +33,6 @@ scripts/downloaded_files/
 
 # Local raw/data exports
 /player_valuations.csv
+
+# Local database dumps
+/db_dumps/
