@@ -33,13 +33,15 @@ WHERE team_code IS NOT NULL;
 
 
 -- 4. Manuelle Mapping-Liste
-CREATE  TABLE manual_elo_mapping (
+DROP TABLE IF EXISTS staging.manual_elo_mapping;
+
+CREATE TABLE staging.manual_elo_mapping (
     elo_team_code TEXT PRIMARY KEY,
     canonical_name TEXT NOT NULL
-) ;
+);
 
 
-INSERT INTO manual_elo_mapping (elo_team_code, canonical_name)
+INSERT INTO staging.manual_elo_mapping (elo_team_code, canonical_name)
 VALUES
         ('AB', 'Abkhazia'),
         ('AD', 'Andorra'),
@@ -289,7 +291,7 @@ VALUES
 -- 5. Mapping in elo_team_code_mapping setzen
 UPDATE staging.elo_team_code_mapping em
 SET canonical_name = mm.canonical_name
-FROM manual_elo_mapping mm
+FROM staging.manual_elo_mapping mm
 WHERE em.elo_team_code = mm.elo_team_code;
 
 
@@ -299,7 +301,7 @@ WHERE em.elo_team_code = mm.elo_team_code;
 -- Cocos (Keeling) Islands und Christmas Island.
 INSERT INTO staging.team_mapping (canonical_name)
 SELECT mm.canonical_name
-FROM manual_elo_mapping mm
+FROM staging.manual_elo_mapping mm
 LEFT JOIN staging.team_mapping tm
     ON tm.canonical_name = mm.canonical_name
 WHERE tm.team_id IS NULL
@@ -341,7 +343,7 @@ ORDER BY elo_team_code;
 
 -- Check 3: Gibt es Mapping-Namen, die nicht in team_mapping stehen?
 SELECT mm.*
-FROM manual_elo_mapping mm
+FROM staging.manual_elo_mapping mm
 LEFT JOIN staging.team_mapping tm
     ON tm.canonical_name = mm.canonical_name
 WHERE tm.team_id IS NULL
